@@ -106,6 +106,14 @@ python -m app.main
 ## Pengembangan
 
 ```bash
-python -m compileall app          # cek sintaks
-python -m pytest -q                # unit test (generator/validator/paginasi)
+python -m compileall app          # cek sintaks semua modul
+python -m pytest -q                # unit test + smoke test (18 test)
+python -m tests.smoke.run_smoke    # smoke test end-to-end (alur asli, 43 cek)
 ```
+
+Smoke test menjalankan alur asli handler+service (start -> buat random ->
+konfirmasi -> anti double-click -> partial+retry -> list -> hapus -> manual ->
+owner-only) memakai stub ringan untuk library eksternal dan fake in-memory untuk
+DB & Cloudflare, sehingga bug logika/alur terdeteksi tanpa koneksi nyata.
+Verifikasi runtime penuh (aiogram/SQLAlchemy asli) tetap dilakukan saat deploy
+Docker di VPS.
