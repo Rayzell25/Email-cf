@@ -72,11 +72,20 @@ async def create_fresh(
     reply_markup: Optional[InlineKeyboardMarkup] = None,
     parse_mode: str = "HTML",
 ) -> None:
-    """Force-create a new dashboard message (used by /start).
+    """Force-create a new dashboard message (used by /start and /menu).
 
-    If a previous dashboard message exists we leave it as-is on Telegram (it is
-    no longer tracked); the new one becomes the single tracked dashboard.
+    The previously tracked dashboard message is DELETED first, so the chat keeps
+    exactly one bot message: the new dashboard appears at the bottom and the old
+    menu disappears.
     """
+    old = await dashboard_repo.get(session, user_id)
+    if old is not None:
+        try:
+            await bot.delete_message(old.chat_id, old.message_id)
+        except Exception:
+            # already gone / too old to delete -> ignore
+            pass
+
     message = await safe_send(
         bot, chat_id, text, reply_markup=reply_markup, parse_mode=parse_mode
     )

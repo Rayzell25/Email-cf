@@ -425,6 +425,7 @@ class FakeBot:
         self.last_text = None
         self.last_markup = None
         self._mid = 100
+        self.deleted = []
         self.session = SimpleNamespace(close=_noop)
 
     async def send_message(self, chat_id, text, reply_markup=None, **k):
@@ -437,6 +438,10 @@ class FakeBot:
     async def edit_message_text(self, text, chat_id, message_id, reply_markup=None, **k):
         self.last_text = text
         self.last_markup = reply_markup
+        return True
+
+    async def delete_message(self, chat_id, message_id):
+        self.deleted.append(message_id)
         return True
 
 
@@ -528,6 +533,14 @@ async def run() -> int:
     h.check("m:create" in kb_callbacks(bot.last_markup), "BUAT EMAIL button present")
     h.check(msg._deleted, "user /start message deleted")
     h.check(OWNER_ID in DB.dashboards, "dashboard record stored")
+
+    # ---- S1b: /start again removes the old dashboard, keeps a single message ----
+    h.section("S1b /start again -> old menu removed")
+    old_dash_id = DB.dashboards[OWNER_ID].message_id
+    await start.on_start(make_message(text="/start"), bot, session, state, cf)
+    new_dash_id = DB.dashboards[OWNER_ID].message_id
+    h.check(old_dash_id in bot.deleted, "previous dashboard message deleted")
+    h.check(new_dash_id != old_dash_id, "a new single dashboard message created")
 
     # ---- S2: open create -> domain list ----
     h.section("S2 BUAT EMAIL -> domain list")
