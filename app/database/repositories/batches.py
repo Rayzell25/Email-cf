@@ -81,8 +81,16 @@ async def try_lock_for_processing(
 async def replace_items(
     session: AsyncSession, batch: GenerationBatch, emails: Sequence[str]
 ) -> list[BatchItem]:
-    """Replace the batch's items with a fresh set of pending emails."""
-    for item in list(batch.items):
+    """Replace the batch's items with a fresh set of pending emails.
+
+    NOTE: we delete existing items via an explicit awaited query rather than
+    iterating ``batch.items`` -- accessing that relationship lazily would emit
+    IO outside the async greenlet and raise MissingGreenlet.
+    """
+    existing = await session.execute(
+        select(BatchItem).where(BatchItem.batch_id == batch.id)
+    )
+    for item in existing.scalars().all():
         await session.delete(item)
     await session.flush()
     items: list[BatchItem] = []
