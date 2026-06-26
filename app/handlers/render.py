@@ -125,7 +125,7 @@ def random_count_text(domain: str) -> str:
     return (
         f"{pe('dice')} <b>RANDOM EMAIL</b>\n\n"
         f"Domain:\n{pe('domain')} <b>{domain}</b>\n\n"
-        "Choose how many emails to create (1-10):"
+        "Choose how many emails to create (1-15):"
     )
 
 

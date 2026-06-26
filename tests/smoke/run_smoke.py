@@ -560,7 +560,14 @@ async def run() -> int:
     h.section("S4 random -> pilih jumlah")
     await create_random.on_random(make_callback("c:rand"), bot, session, state)
     h.check("RANDOM" in (bot.last_text or ""), "count screen shown")
-    h.check("r:cnt:4" in kb_callbacks(bot.last_markup), "count button 4 present")
+    cbs4 = kb_callbacks(bot.last_markup)
+    h.check("r:cnt:4" in cbs4, "count button 4 present")
+    h.check("r:cnt:15" in cbs4, "count goes up to 15")
+    _numrows = [
+        row for row in bot.last_markup.inline_keyboard
+        if row and all((b.callback_data or "").startswith("r:cnt:") for b in row)
+    ]
+    h.check(any(len(r) == 2 for r in _numrows), "number buttons laid out in 2 columns")
 
     # ---- S5: choose 4 -> confirm ----
     h.section("S5 pilih 4 -> konfirmasi")

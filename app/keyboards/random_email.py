@@ -19,16 +19,14 @@ def method_kb() -> InlineKeyboardMarkup:
 
 
 def count_kb() -> InlineKeyboardMarkup:
-    row1 = [btn(str(n), cb.random_count(n)) for n in range(1, 6)]
-    row2 = [btn(str(n), cb.random_count(n)) for n in range(6, 11)]
-    return InlineKeyboardMarkup(
-        inline_keyboard=[
-            row1,
-            row2,
-            [btn("MANUAL INPUT", cb.CREATE_MANUAL, emoji_key="pencil")],
-            [btn("BACK", cb.CREATE_BACK_METHOD, emoji_key="back")],
-        ]
-    )
+    # numbers 1..15 arranged in 2 columns (left & right), 2 per row
+    rows: list[list] = []
+    numbers = list(range(1, 16))
+    for i in range(0, len(numbers), 2):
+        rows.append([btn(str(n), cb.random_count(n)) for n in numbers[i:i + 2]])
+    rows.append([btn("MANUAL INPUT", cb.CREATE_MANUAL, emoji_key="pencil")])
+    rows.append([btn("BACK", cb.CREATE_BACK_METHOD, emoji_key="back")])
+    return InlineKeyboardMarkup(inline_keyboard=rows)
 
 
 def confirm_kb(batch_id: int) -> InlineKeyboardMarkup:

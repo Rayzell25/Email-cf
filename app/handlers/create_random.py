@@ -102,7 +102,7 @@ async def on_count(
     await render.ack(callback, "Generating names...")
     parts = cb.parse(callback.data)
     count = cb.safe_int(parts[2], 0) if len(parts) > 2 else 0
-    if count < 1 or count > 10:
+    if count < 1 or count > 15:
         await render.ack(callback, "Invalid amount.", True)
         return
 
