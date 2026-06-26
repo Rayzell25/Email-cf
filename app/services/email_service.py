@@ -50,8 +50,14 @@ async def create_one(
     full_email: str,
     source: EmailSource,
     owner_id: Optional[int] = None,
+    precheck_emails: Optional[set] = None,
 ) -> CreateResult:
-    """Create one routing rule with full pre-checks. Idempotent on retry."""
+    """Create one routing rule with full pre-checks. Idempotent on retry.
+
+    ``precheck_emails`` (a set of lowercase emails already on Cloudflare for this
+    zone) lets a batch fetch the rule list ONCE and skip the per-email lookup,
+    which is much faster when creating many emails at once.
+    """
     settings = get_settings()
     full_email = full_email.lower()
     local_part = full_email.split("@", 1)[0]
@@ -66,10 +72,13 @@ async def create_one(
         return CreateResult(False, full_email, error="Address already in use.")
 
     # --- re-check: already exists on Cloudflare? ---
-    try:
-        existing = await cf.find_rule_by_email(zone_id, full_email)
-    except CloudflareError as exc:
-        return CreateResult(False, full_email, error=exc.user_message)
+    if precheck_emails is not None and full_email not in precheck_emails:
+        existing = None  # trust the batch prefetch -> skip the extra GET
+    else:
+        try:
+            existing = await cf.find_rule_by_email(zone_id, full_email)
+        except CloudflareError as exc:
+            return CreateResult(False, full_email, error=exc.user_message)
     if existing is not None:
         # mirror into DB so future checks are correct, but report as collision
         await emails_repo.record_created(

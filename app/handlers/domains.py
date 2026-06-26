@@ -120,26 +120,14 @@ async def _start_create(
 ) -> None:
     from app.handlers.create_random import show_method
 
-    # verify zone + email routing are active before allowing create
+    # Only check the (free, cached) zone status. We intentionally do NOT call
+    # get_email_routing_status here: it is an extra Cloudflare round-trip (slower)
+    # and an extra permission surface. If Email Routing is disabled, the create
+    # POST will report it clearly at confirm time.
     if zone.status and zone.status != "active":
         await render.show(
             bot, session, callback, render.domain_inactive_text(zone.name),
             _back_kb(),
-        )
-        return
-    try:
-        status = await cf.get_email_routing_status(zone.id)
-    except CloudflareError as exc:
-        from app.keyboards.main_menu import error_retry_kb
-
-        await render.show(
-            bot, session, callback, render.cloudflare_error_text(exc.user_message),
-            error_retry_kb(),
-        )
-        return
-    if status and status.get("enabled") is False:
-        await render.show(
-            bot, session, callback, render.domain_inactive_text(zone.name), _back_kb()
         )
         return
 
@@ -152,5 +140,5 @@ def _back_kb():
     from app.keyboards.common import btn
 
     return InlineKeyboardMarkup(
-        inline_keyboard=[[btn("MENU UTAMA", cb.MENU_HOME, emoji_key="home")]]
+        inline_keyboard=[[btn("MAIN MENU", cb.MENU_HOME, emoji_key="home")]]
     )

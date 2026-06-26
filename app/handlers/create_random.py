@@ -301,6 +301,16 @@ async def _process_items(
 ) -> list[tuple[bool, str, Optional[str]]]:
     total = len(to_attempt)
     done = 0
+
+    # Fetch the existing rule list ONCE for the whole batch (perf): avoids a
+    # per-email Cloudflare lookup inside create_one.
+    precheck_emails: Optional[set] = None
+    try:
+        rules = await cf.list_routing_rules(zone_id)
+        precheck_emails = {r.email for r in rules}
+    except Exception:
+        precheck_emails = None
+
     for item in to_attempt:
         done += 1
         await render.show(
@@ -311,11 +321,14 @@ async def _process_items(
             session, cf,
             zone_id=zone_id, domain=domain, full_email=item.full_email,
             source=EmailSource.random, owner_id=callback.from_user.id,
+            precheck_emails=precheck_emails,
         )
         if result.ok:
             item.status = BatchItemStatus.created.value
             item.cloudflare_rule_id = result.rule_id
             item.error_message = None
+            if precheck_emails is not None:
+                precheck_emails.add(item.full_email.lower())
         else:
             item.status = BatchItemStatus.failed.value
             item.error_message = result.error

@@ -149,7 +149,8 @@ class CloudflareClient:
 
         if response.status_code == 401 or response.status_code == 403:
             raise CloudflareError(
-                "Cloudflare API token rejected (401/403). Check token & permissions.",
+                "Cloudflare token rejected (401/403). The token needs "
+                "'Zone > Email Routing Rules > Edit' (Edit, not just Read).",
                 status=response.status_code,
             )
 
