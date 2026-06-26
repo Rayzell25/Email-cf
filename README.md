@@ -72,10 +72,38 @@ pydantic-settings · Redis · Docker.
 
 Token ini → `CLOUDFLARE_API_TOKEN`.
 
-## Langkah 2 — Account ID
-Dashboard → klik salah satu domain → **Overview** → panel kanan bawah **API** →
-**Account ID** (copy). Itu → `CLOUDFLARE_ACCOUNT_ID`.
-(Di tempat yang sama ada **Zone ID** bila sewaktu-waktu diperlukan.)
+## Langkah 2 — Account ID (dan Zone ID)
+
+`CLOUDFLARE_ACCOUNT_ID` dipakai bot untuk membaca daftar alamat tujuan. Ada 3
+cara mengambilnya — pilih yang paling gampang:
+
+**Cara A — dari URL dashboard (paling cepat):**
+Login ke https://dash.cloudflare.com lalu klik salah satu domainmu. Perhatikan
+URL di browser, formatnya:
+```
+https://dash.cloudflare.com/<ACCOUNT_ID>/<nama-domain>
+```
+Bagian setelah `dash.cloudflare.com/` itulah **Account ID** (deretan ~32 karakter
+huruf+angka). Copy.
+
+**Cara B — dari halaman Overview domain:**
+Dashboard → klik domain → menu **Overview** → scroll ke bawah, lihat panel kanan
+bagian **API**. Di situ ada:
+- **Account ID** → ini untuk `CLOUDFLARE_ACCOUNT_ID`
+- **Zone ID** → ID khusus per-domain (tidak wajib untuk bot, hanya untuk diagnostik)
+
+Klik tombol **Click to copy** di sebelahnya.
+
+**Cara C — lewat API (pakai token dari Langkah 1):**
+```bash
+curl -s -H "Authorization: Bearer TOKEN_KAMU" \
+  "https://api.cloudflare.com/client/v4/accounts" \
+  | grep -oE '"id":"[a-f0-9]{32}"|"name":"[^"]*"' | head -4
+```
+`"id"` pertama = Account ID.
+
+> Catatan: Account ID **berbeda** dari Zone ID. Account ID untuk seluruh akun;
+> Zone ID khusus satu domain. Bot butuh **Account ID**.
 
 ## Langkah 3 — Verifikasi email tujuan (PENTING!)
 `DEFAULT_DESTINATION_EMAIL` adalah alamat tujuan forwarding, dan **harus sudah
