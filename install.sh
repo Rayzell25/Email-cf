@@ -35,11 +35,28 @@ if [ "$(id -u)" -ne 0 ]; then
 fi
 
 # --- 1. Docker --------------------------------------------------------------
+# Wait until no other process (e.g. unattended-upgrades) holds the apt/dpkg
+# locks. Avoids the "Could not get lock /var/lib/apt/lists/lock" error.
+wait_for_apt() {
+  local tries=0
+  while $SUDO fuser /var/lib/dpkg/lock-frontend \
+        /var/lib/dpkg/lock /var/lib/apt/lists/lock >/dev/null 2>&1; do
+    tries=$((tries + 1))
+    if [ "$tries" -gt 60 ]; then
+      warn "apt masih terkunci setelah ~5 menit; melanjutkan dan berharap lock sudah lepas."
+      break
+    fi
+    info "Menunggu proses apt/dpkg lain selesai (auto-update?)... ($tries)"
+    sleep 5
+  done
+}
+
 install_docker() {
   if command -v docker >/dev/null 2>&1; then
     info "Docker sudah terpasang ($(docker --version))."
   else
     info "Memasang Docker..."
+    wait_for_apt
     $SUDO apt-get update -y
     $SUDO apt-get install -y ca-certificates curl
     curl -fsSL https://get.docker.com | $SUDO sh
@@ -50,6 +67,7 @@ install_docker() {
     info "Docker Compose plugin tersedia."
   else
     warn "Plugin 'docker compose' tidak ditemukan, mencoba memasang..."
+    wait_for_apt
     $SUDO apt-get install -y docker-compose-plugin || true
   fi
 }
