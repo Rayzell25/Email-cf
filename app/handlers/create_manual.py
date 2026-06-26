@@ -32,7 +32,7 @@ async def on_manual(
     await render.ack(callback)
     domain = (await state.get_data()).get("domain")
     if not domain:
-        await render.ack(callback, "Sesi kedaluwarsa. Tekan /start lagi.", True)
+        await render.ack(callback, "Session expired. Press /start again.", True)
         return
     await state.set_state(Flow.manual_input)
     await render.show(
@@ -49,7 +49,7 @@ async def on_change(
     domain = data.get("domain")
     draft = data.get("manual_draft")
     if not domain:
-        await render.ack(callback, "Sesi kedaluwarsa. Tekan /start lagi.", True)
+        await render.ack(callback, "Session expired. Press /start again.", True)
         return
     # release the previously reserved name before asking for a new one
     if draft and len(draft) >= 3 and draft[2]:
@@ -148,12 +148,12 @@ async def on_confirm(
     state: FSMContext,
     cf: CloudflareClient,
 ) -> None:
-    await render.ack(callback, "Membuat email...")
+    await render.ack(callback, "Creating email...")
     data = await state.get_data()
     zone_id, domain = data.get("zone_id"), data.get("domain")
     draft = data.get("manual_draft")
     if not zone_id or not domain or not draft:
-        await render.ack(callback, "Sesi kedaluwarsa. Tekan /start lagi.", True)
+        await render.ack(callback, "Session expired. Press /start again.", True)
         return
 
     full_email = draft[1]

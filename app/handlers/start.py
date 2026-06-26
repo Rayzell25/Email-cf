@@ -25,8 +25,8 @@ async def on_start(
     await users_repo.get_or_create(session, message.from_user.id)
     await session.commit()
     await state.clear()
-    # /start always creates one fresh dashboard message.
-    await render_main_menu(bot, session, state, message, cf, fresh=True)
+    # /start always creates one fresh dashboard message (and refreshes zones).
+    await render_main_menu(bot, session, state, message, cf, fresh=True, force=True)
     # remove the user's /start command message so only the dashboard remains
     try:
         await message.delete()

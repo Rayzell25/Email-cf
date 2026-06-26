@@ -29,7 +29,7 @@ async def show_delete_confirm(
     data = await state.get_data()
     rule = _rule_from_state(data.get("email_rules"), index)
     if rule is None:
-        await render.ack(callback, "Data lama, buka ulang list.", True)
+        await render.ack(callback, "Stale data, reopen the list.", True)
         return
     await state.update_data(view_index=index)
     await render.show(
@@ -56,14 +56,14 @@ async def on_delete_confirm(
     state: FSMContext,
     cf: CloudflareClient,
 ) -> None:
-    await render.ack(callback, "Menghapus...")
+    await render.ack(callback, "Deleting...")
     parts = cb.parse(callback.data)
     index = cb.safe_int(parts[2], -1) if len(parts) > 2 else -1
     data = await state.get_data()
     zone_id = data.get("zone_id", "")
     rule = _rule_from_state(data.get("email_rules"), index)
     if rule is None or not zone_id:
-        await render.ack(callback, "Data lama, buka ulang list.", True)
+        await render.ack(callback, "Stale data, reopen the list.", True)
         return
 
     result = await email_service.delete_one(
@@ -72,6 +72,8 @@ async def on_delete_confirm(
         owner_id=callback.from_user.id,
     )
     if result.ok:
+        # invalidate cached list so BACK TO LIST shows fresh data
+        await state.update_data(all_rules=None, all_rules_zone=None)
         await render.show(
             bot, session, callback, render.delete_success_text(rule.email),
             delete_result_kb(),

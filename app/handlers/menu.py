@@ -24,14 +24,19 @@ async def render_main_menu(
     cf: CloudflareClient,
     *,
     fresh: bool = False,
+    force: bool = False,
 ) -> None:
-    """Build + show the main menu (also refreshes the zones cache)."""
+    """Build + show the main menu.
+
+    ``force`` re-fetches zones from Cloudflare (used by REFRESH / first /start);
+    otherwise the cached zone list is reused so the menu opens instantly.
+    """
     await state.set_state(None)
 
     connected = True
     zones = []
     try:
-        zones = await states.get_zones(state, cf, force=True)
+        zones = await states.get_zones(state, cf, force=force)
     except CloudflareError:
         connected = False
 
@@ -60,8 +65,8 @@ async def on_refresh(
     state: FSMContext,
     cf: CloudflareClient,
 ) -> None:
-    await render.ack(callback, "Memuat ulang...")
-    await render_main_menu(bot, session, state, callback, cf)
+    await render.ack(callback, "Refreshing...")
+    await render_main_menu(bot, session, state, callback, cf, force=True)
 
 
 @router.callback_query(F.data == cb.NOOP)

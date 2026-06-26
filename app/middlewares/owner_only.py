@@ -14,7 +14,7 @@ from app.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
-DENIED_TEXT = "\u26D4 AKSES DITOLAK\n\nBot ini bersifat pribadi."
+DENIED_TEXT = "\u26D4 ACCESS DENIED\n\nThis bot is private."
 
 
 class OwnerOnlyMiddleware(BaseMiddleware):
@@ -38,7 +38,7 @@ class OwnerOnlyMiddleware(BaseMiddleware):
         logger.warning("Access denied for user %s", uid)
         try:
             if isinstance(event, CallbackQuery):
-                await event.answer("Akses ditolak. Bot ini pribadi.", show_alert=True)
+                await event.answer("Access denied. This bot is private.", show_alert=True)
             elif isinstance(event, Message):
                 await event.answer(DENIED_TEXT)
         except Exception:  # pragma: no cover - best effort

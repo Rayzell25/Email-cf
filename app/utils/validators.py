@@ -33,33 +33,33 @@ def normalize_local_part(value: str) -> str:
 def validate_local_part(raw: str) -> ValidationResult:
     """Validate a manually entered email local part (the bit before '@')."""
     if raw is None:
-        return ValidationResult(False, error="Input kosong.")
+        return ValidationResult(False, error="Empty input.")
 
     value = raw.strip().lower()
 
     if not value:
-        return ValidationResult(False, error="Nama email tidak boleh kosong.")
+        return ValidationResult(False, error="Email name cannot be empty.")
     if " " in value or "\t" in value or "\n" in value:
-        return ValidationResult(False, error="Nama email tidak boleh memakai spasi.")
+        return ValidationResult(False, error="Email name cannot contain spaces.")
     if "@" in value:
         return ValidationResult(
-            False, error="Cukup ketik nama saja, tanpa @ dan tanpa domain."
+            False, error="Just type the name, without @ or domain."
         )
     if len(value) > MAX_LOCAL_PART_LENGTH:
         return ValidationResult(
-            False, error=f"Nama email maksimal {MAX_LOCAL_PART_LENGTH} karakter."
+            False, error=f"Email name can be at most {MAX_LOCAL_PART_LENGTH} characters."
         )
     if not _LOCAL_PART_RE.match(value):
         return ValidationResult(
             False,
-            error="Karakter tidak valid. Hanya boleh: a-z 0-9 titik garis-bawah strip.",
+            error="Invalid characters. Allowed: a-z 0-9 dot underscore hyphen.",
         )
     # cosmetic rules: must not start/end with a separator or have doubled dots
     if value[0] in "._-" or value[-1] in "._-":
         return ValidationResult(
-            False, error="Nama tidak boleh diawali / diakhiri titik, strip, atau garis-bawah."
+            False, error="Name cannot start or end with a dot, hyphen, or underscore."
         )
     if ".." in value:
-        return ValidationResult(False, error="Tidak boleh ada dua titik berurutan.")
+        return ValidationResult(False, error="Two consecutive dots are not allowed.")
 
     return ValidationResult(True, value=value)

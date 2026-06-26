@@ -96,7 +96,7 @@ async def on_domain_select(
 
     zone = await states.get_zone_by_index_on_page(state, index)
     if zone is None:
-        await render.ack(callback, "Domain tidak ditemukan, buka ulang menu.", True)
+        await render.ack(callback, "Domain not found, reopen the menu.", True)
         return
 
     await state.update_data(zone_id=zone.id, domain=zone.name, purpose=purpose)

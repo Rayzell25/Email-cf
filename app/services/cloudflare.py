@@ -118,7 +118,7 @@ class CloudflareClient:
                     await asyncio.sleep(min(2 ** attempt, 8) * 0.5)
                     continue
                 raise CloudflareUnknownResult(
-                    "Permintaan ke Cloudflare timeout. Status tidak diketahui."
+                    "Request to Cloudflare timed out. Status unknown."
                 ) from exc
             except httpx.HTTPError as exc:
                 last_exc = exc
@@ -128,7 +128,7 @@ class CloudflareClient:
             if response.status_code in (429, 500, 502, 503, 504) and retry_safe:
                 await asyncio.sleep(min(2 ** attempt, 8) * 0.5)
                 last_exc = CloudflareError(
-                    f"Cloudflare sementara tidak tersedia ({response.status_code}).",
+                    f"Cloudflare temporarily unavailable ({response.status_code}).",
                     status=response.status_code,
                 )
                 continue
@@ -138,7 +138,7 @@ class CloudflareClient:
         if isinstance(last_exc, CloudflareError):
             raise last_exc
         raise CloudflareError(
-            "Tidak dapat terhubung ke Cloudflare. Periksa koneksi / API Token."
+            "Could not connect to Cloudflare. Check connection / API token."
         ) from last_exc
 
     def _parse(self, response: httpx.Response) -> dict[str, Any]:
@@ -149,13 +149,13 @@ class CloudflareClient:
 
         if response.status_code == 401 or response.status_code == 403:
             raise CloudflareError(
-                "API Token Cloudflare ditolak (401/403). Periksa token & permission.",
+                "Cloudflare API token rejected (401/403). Check token & permissions.",
                 status=response.status_code,
             )
 
         if not isinstance(data, dict):
             raise CloudflareError(
-                f"Respons Cloudflare tidak valid (HTTP {response.status_code}).",
+                f"Invalid Cloudflare response (HTTP {response.status_code}).",
                 status=response.status_code,
             )
 

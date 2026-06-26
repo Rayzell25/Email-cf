@@ -20,8 +20,8 @@ logger = get_logger(__name__)
 async def _set_commands(bot) -> None:
     await bot.set_my_commands(
         [
-            BotCommand(command="start", description="Buka dashboard"),
-            BotCommand(command="menu", description="Menu utama"),
+            BotCommand(command="start", description="Open dashboard"),
+            BotCommand(command="menu", description="Main menu"),
         ]
     )
 

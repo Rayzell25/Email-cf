@@ -73,28 +73,28 @@ async def ack(event: CallbackQuery, text: str = "", show_alert: bool = False) ->
 
 
 # ----------------------------------------------------------------------------
-# Text builders
+# Text builders (English UI)
 # ----------------------------------------------------------------------------
 def menu_text(total_domains: int, total_emails: int, connected: bool) -> str:
     status = (
-        f"{pe('green')} Cloudflare API: Terhubung"
+        f"{pe('green')} Cloudflare API: Connected"
         if connected
-        else f"{pe('fail')} Cloudflare API: Tidak terhubung"
+        else f"{pe('fail')} Cloudflare API: Not connected"
     )
     return (
         f"{pe('cloud')} <b>CLOUDFLARE EMAIL MANAGER</b>\n\n"
-        "Kelola email Cloudflare langsung dari Telegram.\n\n"
-        f"{pe('domain')} Total domain: <b>{total_domains}</b>\n"
-        f"{pe('mail')} Email tercatat: <b>{total_emails}</b>\n"
+        "Manage your Cloudflare email routing from Telegram.\n\n"
+        f"{pe('domain')} Total domains: <b>{total_domains}</b>\n"
+        f"{pe('mail')} Saved emails: <b>{total_emails}</b>\n"
         f"{status}\n\n"
-        "Pilih menu:"
+        "Choose a menu:"
     )
 
 
 _PURPOSE_TITLE = {
-    "c": ("create", "BUAT EMAIL"),
+    "c": ("create", "CREATE EMAIL"),
     "l": ("list", "LIST EMAIL"),
-    "d": ("delete", "HAPUS EMAIL"),
+    "d": ("delete", "DELETE EMAIL"),
 }
 
 
@@ -103,58 +103,58 @@ def domains_text(purpose: str, page: Page) -> str:
     if page.total_items == 0:
         return (
             f"{pe('domain')} <b>LIST DOMAIN</b>\n\n"
-            "Belum ada domain pada akun Cloudflare ini."
+            "No domains found on this Cloudflare account."
         )
     return (
         f"{pe(emoji_key)} <b>{title}</b>\n\n"
-        f"Total domain: <b>{page.total_items}</b>\n"
-        f"Halaman: <b>{page.page} dari {page.total_pages}</b>\n\n"
-        "Pilih domain:"
+        f"Total domains: <b>{page.total_items}</b>\n"
+        f"Page: <b>{page.page} of {page.total_pages}</b>\n\n"
+        "Select a domain:"
     )
 
 
 def method_text(domain: str) -> str:
     return (
-        f"{pe('create')} <b>BUAT EMAIL</b>\n\n"
-        f"Domain dipilih:\n{pe('domain')} <b>{domain}</b>\n\n"
-        "Silakan pilih cara membuat email."
+        f"{pe('create')} <b>CREATE EMAIL</b>\n\n"
+        f"Selected domain:\n{pe('domain')} <b>{domain}</b>\n\n"
+        "Choose how to create the email."
     )
 
 
 def random_count_text(domain: str) -> str:
     return (
-        f"{pe('dice')} <b>BUAT EMAIL RANDOM</b>\n\n"
+        f"{pe('dice')} <b>RANDOM EMAIL</b>\n\n"
         f"Domain:\n{pe('domain')} <b>{domain}</b>\n\n"
-        "Pilih jumlah email yang ingin dibuat (1-10):"
+        "Choose how many emails to create (1-10):"
     )
 
 
 def random_confirm_text(domain: str, emails: list[str]) -> str:
     lines = "\n".join(f"{i}. {e}" for i, e in enumerate(emails, start=1))
     return (
-        f"{pe('dice')} <b>KONFIRMASI EMAIL RANDOM</b>\n\n"
+        f"{pe('dice')} <b>CONFIRM RANDOM EMAIL</b>\n\n"
         f"Domain:\n{pe('domain')} <b>{domain}</b>\n\n"
-        f"Jumlah:\n<b>{len(emails)} email</b>\n\n"
-        "Email yang akan dibuat:\n"
+        f"Count:\n<b>{len(emails)} emails</b>\n\n"
+        "Emails to create:\n"
         f"{lines}\n\n"
-        "Lanjutkan pembuatan?"
+        "Proceed?"
     )
 
 
 def processing_text(domain: str, current: int, total: int) -> str:
     return (
-        f"{pe('wait')} <b>MEMBUAT EMAIL</b>\n\n"
+        f"{pe('wait')} <b>CREATING EMAIL</b>\n\n"
         f"Domain:\n{pe('domain')} <b>{domain}</b>\n\n"
-        f"Proses:\n<b>{current} dari {total}</b>"
+        f"Progress:\n<b>{current} of {total}</b>"
     )
 
 
 def success_text(domain: str, emails: list[str]) -> str:
     lines = "\n".join(f"{pe('ok')} {e}" for e in emails)
     return (
-        f"{pe('ok')} <b>EMAIL BERHASIL DIBUAT</b>\n\n"
+        f"{pe('ok')} <b>EMAILS CREATED</b>\n\n"
         f"Domain:\n{pe('domain')} <b>{domain}</b>\n\n"
-        f"Berhasil:\n<b>{len(emails)} email</b>\n\n"
+        f"Created:\n<b>{len(emails)} emails</b>\n\n"
         f"{lines}"
     )
 
@@ -174,39 +174,39 @@ def partial_text(
                 lines.append(f"   {err}")
     body = "\n".join(lines)
     return (
-        f"{pe('warn')} <b>PEMBUATAN SELESAI</b>\n\n"
+        f"{pe('warn')} <b>CREATION FINISHED</b>\n\n"
         f"Domain:\n{pe('domain')} <b>{domain}</b>\n\n"
-        f"Berhasil: <b>{len(success)}</b>   Gagal: <b>{len(failed)}</b>\n\n"
+        f"Success: <b>{len(success)}</b>   Failed: <b>{len(failed)}</b>\n\n"
         f"{body}"
     )
 
 
 def manual_prompt_text(domain: str) -> str:
     return (
-        f"{pe('pencil')} <b>INPUT EMAIL MANUAL</b>\n\n"
+        f"{pe('pencil')} <b>MANUAL EMAIL INPUT</b>\n\n"
         f"Domain:\n{pe('domain')} <b>{domain}</b>\n\n"
-        "Silakan ketik nama email.\n\n"
-        "Contoh:\nsupport\nadmin.store\norder-2026\n\n"
-        f"Tidak perlu menulis @{domain}."
+        "Type the email name.\n\n"
+        "Example:\nsupport\nadmin.store\norder-2026\n\n"
+        f"No need to type @{domain}."
     )
 
 
 def manual_invalid_text(domain: str, error: str) -> str:
     return (
-        f"{pe('warn')} <b>INPUT TIDAK VALID</b>\n\n"
+        f"{pe('warn')} <b>INVALID INPUT</b>\n\n"
         f"{error}\n\n"
         f"Domain:\n{pe('domain')} <b>{domain}</b>\n\n"
-        "Silakan ketik nama email lagi."
+        "Please type the email name again."
     )
 
 
 def manual_confirm_text(domain: str, full_email: str) -> str:
     return (
-        f"{pe('pencil')} <b>KONFIRMASI EMAIL</b>\n\n"
-        "Alamat yang akan dibuat:\n"
+        f"{pe('pencil')} <b>CONFIRM EMAIL</b>\n\n"
+        "Address to create:\n"
         f"{pe('mail')} <b>{full_email}</b>\n\n"
         f"Domain:\n{pe('domain')} <b>{domain}</b>\n\n"
-        "Lanjutkan?"
+        "Proceed?"
     )
 
 
@@ -214,17 +214,17 @@ def email_list_text(domain: str, page: Page[RoutingRule]) -> str:
     return (
         f"{pe('list')} <b>LIST EMAIL</b>\n\n"
         f"Domain:\n{pe('domain')} <b>{domain}</b>\n\n"
-        f"Total email: <b>{page.total_items}</b>\n"
-        f"Halaman: <b>{page.page} dari {page.total_pages}</b>\n\n"
-        "Pilih email untuk melihat detail:"
+        f"Total emails: <b>{page.total_items}</b>\n"
+        f"Page: <b>{page.page} of {page.total_pages}</b>\n\n"
+        "Select an email to view details:"
     )
 
 
 def email_empty_text(domain: str) -> str:
     return (
-        f"{pe('mailbox')} <b>BELUM ADA EMAIL</b>\n\n"
+        f"{pe('mailbox')} <b>NO EMAILS YET</b>\n\n"
         f"Domain:\n{pe('domain')} <b>{domain}</b>\n\n"
-        "Belum ada alamat email pada domain ini."
+        "There are no email addresses on this domain."
     )
 
 
@@ -235,36 +235,36 @@ def email_detail_text(
     created_via_bot: bool,
     created_at: Optional[str],
 ) -> str:
-    status = f"{pe('green')} Aktif" if rule.enabled else f"{pe('fail')} Nonaktif"
-    via = "Ya" if created_via_bot else "Tidak"
-    when = created_at if created_at else "Tidak diketahui"
+    status = f"{pe('green')} Active" if rule.enabled else f"{pe('fail')} Inactive"
+    via = "Yes" if created_via_bot else "No"
+    when = created_at if created_at else "Unknown"
     return (
-        f"{pe('mail')} <b>DETAIL EMAIL</b>\n\n"
-        f"Alamat:\n<b>{rule.email}</b>\n\n"
+        f"{pe('mail')} <b>EMAIL DETAILS</b>\n\n"
+        f"Address:\n<b>{rule.email}</b>\n\n"
         f"Domain:\n{domain}\n\n"
-        f"Tujuan:\n{rule.destination or '-'}\n\n"
+        f"Destination:\n{rule.destination or '-'}\n\n"
         f"Status:\n{status}\n\n"
-        f"Dibuat melalui bot:\n{via}\n\n"
-        f"Tanggal dibuat:\n{when}"
+        f"Created via bot:\n{via}\n\n"
+        f"Created at:\n{when}"
     )
 
 
 def delete_confirm_text(full_email: str) -> str:
     return (
-        f"{pe('warn')} <b>HAPUS EMAIL</b>\n\n"
-        "Anda akan menghapus:\n"
+        f"{pe('warn')} <b>DELETE EMAIL</b>\n\n"
+        "You are about to delete:\n"
         f"{pe('mail')} <b>{full_email}</b>\n\n"
-        "Setelah dihapus, alamat ini tidak lagi menerima "
-        "atau meneruskan email.\n\n"
-        "Yakin ingin menghapusnya?"
+        "After deletion, this address will no longer receive "
+        "or forward email.\n\n"
+        "Are you sure?"
     )
 
 
 def delete_success_text(full_email: str) -> str:
     return (
-        f"{pe('ok')} <b>EMAIL BERHASIL DIHAPUS</b>\n\n"
+        f"{pe('ok')} <b>EMAIL DELETED</b>\n\n"
         f"{pe('mail')} <b>{full_email}</b>\n\n"
-        "Alamat sudah dihapus dari Cloudflare Email Routing."
+        "The address has been removed from Cloudflare Email Routing."
     )
 
 
@@ -272,16 +272,16 @@ def cloudflare_error_text(message: str) -> str:
     return (
         f"{pe('fail')} <b>CLOUDFLARE API ERROR</b>\n\n"
         f"{message}\n\n"
-        "Kemungkinan:\n"
-        "- API Token salah\n"
-        "- Permission token kurang\n"
-        "- Cloudflare sedang gangguan"
+        "Possible causes:\n"
+        "- Wrong API token\n"
+        "- Missing token permissions\n"
+        "- Cloudflare outage"
     )
 
 
 def domain_inactive_text(domain: str) -> str:
     return (
-        f"{pe('warn')} <b>DOMAIN TIDAK AKTIF</b>\n\n"
+        f"{pe('warn')} <b>DOMAIN NOT ACTIVE</b>\n\n"
         f"Domain:\n{domain}\n\n"
-        "Status domain Cloudflare tidak aktif, atau Email Routing belum aktif."
+        "The Cloudflare domain is not active, or Email Routing is not enabled."
     )

@@ -59,11 +59,11 @@ async def create_one(
     destination = settings.default_destination_email
 
     if not destination:
-        return CreateResult(False, full_email, error="Destination email belum diatur.")
+        return CreateResult(False, full_email, error="Destination email is not set.")
 
     # --- re-check: already exists locally? ---
     if await emails_repo.exists_active(session, full_email):
-        return CreateResult(False, full_email, error="Alamat sudah digunakan.")
+        return CreateResult(False, full_email, error="Address already in use.")
 
     # --- re-check: already exists on Cloudflare? ---
     try:
@@ -84,7 +84,7 @@ async def create_one(
             source=EmailSource.external,
         )
         await session.commit()
-        return CreateResult(False, full_email, error="Alamat sudah digunakan.")
+        return CreateResult(False, full_email, error="Address already in use.")
 
     # --- create ---
     try:
@@ -97,7 +97,7 @@ async def create_one(
             await _safe_mark_failed(session, normalized)
             await session.commit()
             return CreateResult(
-                False, full_email, error="Status tidak diketahui, coba lagi."
+                False, full_email, error="Status unknown, please try again."
             )
         rule_id = verified.id
     except CloudflareError as exc:
@@ -167,7 +167,7 @@ async def delete_one(
             return DeleteResult(False, full_email, error=exc.user_message)
         if still is not None:
             return DeleteResult(
-                False, full_email, error="Status tidak diketahui, coba lagi."
+                False, full_email, error="Status unknown, please try again."
             )
     except CloudflareError as exc:
         # maybe it was already deleted (e.g. double click) -> verify

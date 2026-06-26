@@ -12,8 +12,8 @@ def method_kb() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [btn("RANDOM", cb.CREATE_RANDOM, emoji_key="dice")],
-            [btn("MASUKKAN EMAIL", cb.CREATE_MANUAL, emoji_key="pencil")],
-            [btn("KEMBALI", cb.domain_page(1, "c"), emoji_key="back")],
+            [btn("ENTER EMAIL", cb.CREATE_MANUAL, emoji_key="pencil")],
+            [btn("BACK", cb.domain_page(1, "c"), emoji_key="back")],
         ]
     )
 
@@ -25,8 +25,8 @@ def count_kb() -> InlineKeyboardMarkup:
         inline_keyboard=[
             row1,
             row2,
-            [btn("INPUT MANUAL", cb.CREATE_MANUAL, emoji_key="pencil")],
-            [btn("KEMBALI", cb.CREATE_BACK_METHOD, emoji_key="back")],
+            [btn("MANUAL INPUT", cb.CREATE_MANUAL, emoji_key="pencil")],
+            [btn("BACK", cb.CREATE_BACK_METHOD, emoji_key="back")],
         ]
     )
 
@@ -34,10 +34,10 @@ def count_kb() -> InlineKeyboardMarkup:
 def confirm_kb(batch_id: int) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         inline_keyboard=[
-            [btn("BUAT SEMUA", cb.random_confirm(batch_id), emoji_key="ok")],
-            [btn("ACAK ULANG", cb.random_reroll(batch_id), emoji_key="refresh")],
-            [btn("INPUT MANUAL", cb.CREATE_MANUAL, emoji_key="pencil")],
-            [btn("KEMBALI", cb.CREATE_BACK_COUNT, emoji_key="back")],
+            [btn("CREATE ALL", cb.random_confirm(batch_id), emoji_key="ok")],
+            [btn("SHUFFLE", cb.random_reroll(batch_id), emoji_key="refresh")],
+            [btn("MANUAL INPUT", cb.CREATE_MANUAL, emoji_key="pencil")],
+            [btn("BACK", cb.CREATE_BACK_COUNT, emoji_key="back")],
         ]
     )
 
@@ -50,10 +50,10 @@ def processing_kb() -> InlineKeyboardMarkup:
 def success_kb() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         inline_keyboard=[
-            [btn("LIHAT LIST EMAIL", cb.MENU_LIST, emoji_key="list")],
-            [btn("BUAT RANDOM LAGI", cb.CREATE_RANDOM, emoji_key="dice")],
-            [btn("BUAT MANUAL", cb.CREATE_MANUAL, emoji_key="pencil")],
-            [btn("MENU UTAMA", cb.MENU_HOME, emoji_key="home")],
+            [btn("VIEW EMAIL LIST", cb.MENU_LIST, emoji_key="list")],
+            [btn("CREATE RANDOM AGAIN", cb.CREATE_RANDOM, emoji_key="dice")],
+            [btn("CREATE MANUAL", cb.CREATE_MANUAL, emoji_key="pencil")],
+            [btn("MAIN MENU", cb.MENU_HOME, emoji_key="home")],
         ]
     )
 
@@ -61,21 +61,20 @@ def success_kb() -> InlineKeyboardMarkup:
 def partial_kb(batch_id: int) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         inline_keyboard=[
-            [btn("GANTI DAN COBA LAGI", cb.random_retry_failed(batch_id), emoji_key="refresh")],
-            [btn("LIHAT LIST EMAIL", cb.MENU_LIST, emoji_key="list")],
-            [btn("BUAT EMAIL LAIN", cb.CREATE_RANDOM, emoji_key="dice")],
-            [btn("MENU UTAMA", cb.MENU_HOME, emoji_key="home")],
+            [btn("REPLACE & RETRY", cb.random_retry_failed(batch_id), emoji_key="refresh")],
+            [btn("VIEW EMAIL LIST", cb.MENU_LIST, emoji_key="list")],
+            [btn("CREATE OTHER", cb.CREATE_RANDOM, emoji_key="dice")],
+            [btn("MAIN MENU", cb.MENU_HOME, emoji_key="home")],
         ]
     )
-
 
 
 # --- manual input keyboards (kept here with the rest of the create flow) -----
 def manual_prompt_kb() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         inline_keyboard=[
-            [btn("GUNAKAN RANDOM", cb.CREATE_RANDOM, emoji_key="dice")],
-            [btn("KEMBALI", cb.CREATE_BACK_METHOD, emoji_key="back")],
+            [btn("USE RANDOM", cb.CREATE_RANDOM, emoji_key="dice")],
+            [btn("BACK", cb.CREATE_BACK_METHOD, emoji_key="back")],
         ]
     )
 
@@ -83,9 +82,9 @@ def manual_prompt_kb() -> InlineKeyboardMarkup:
 def manual_confirm_kb(draft_id: int) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         inline_keyboard=[
-            [btn("BUAT EMAIL", cb.manual_confirm(draft_id), emoji_key="ok")],
-            [btn("GANTI NAMA", cb.manual_change(draft_id), emoji_key="pencil")],
-            [btn("GUNAKAN RANDOM", cb.CREATE_RANDOM, emoji_key="dice")],
-            [btn("KEMBALI", cb.CREATE_BACK_METHOD, emoji_key="back")],
+            [btn("CREATE EMAIL", cb.manual_confirm(draft_id), emoji_key="ok")],
+            [btn("CHANGE NAME", cb.manual_change(draft_id), emoji_key="pencil")],
+            [btn("USE RANDOM", cb.CREATE_RANDOM, emoji_key="dice")],
+            [btn("BACK", cb.CREATE_BACK_METHOD, emoji_key="back")],
         ]
     )

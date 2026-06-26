@@ -16,7 +16,23 @@ from typing import Optional
 
 from aiogram.types import InlineKeyboardButton
 
+from app.utils import callbacks as cb
 from app.utils.emoji import fallback, icon
+
+
+def pagination_row(page, prev_cb: str, next_cb: str) -> list:
+    """Build a pagination row: [◀️ Prev] [x/y] [Next ▶️].
+
+    The Prev button only appears when there is a previous page; the Next button
+    only appears when there is a next page. So page 1 shows just [x/y][Next ▶️].
+    """
+    row: list = []
+    if page.has_prev:
+        row.append(InlineKeyboardButton(text="\u25C0\ufe0f Prev", callback_data=prev_cb))
+    row.append(InlineKeyboardButton(text=page.label, callback_data=cb.NOOP))
+    if page.has_next:
+        row.append(InlineKeyboardButton(text="Next \u25B6\ufe0f", callback_data=next_cb))
+    return row
 
 
 def btn(

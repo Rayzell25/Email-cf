@@ -14,7 +14,7 @@ from app.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
-GENERIC_TEXT = "\u26A0\ufe0f Terjadi kesalahan. Silakan coba lagi."
+GENERIC_TEXT = "\u26A0\ufe0f Something went wrong. Please try again."
 
 
 def register_error_handler(dp: Dispatcher, bot: Bot) -> None:

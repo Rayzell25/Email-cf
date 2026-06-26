@@ -538,7 +538,7 @@ async def run() -> int:
     # ---- S3: select domain -> method chooser ----
     h.section("S3 pilih domain -> metode")
     await domains.on_domain_select(make_callback("d:sel:c:0"), bot, session, state, cf)
-    h.check("BUAT EMAIL" in (bot.last_text or ""), "method screen shown")
+    h.check("CREATE EMAIL" in (bot.last_text or ""), "method screen shown")
     cbs = kb_callbacks(bot.last_markup)
     h.check("c:rand" in cbs and "c:man" in cbs, "random + manual buttons present")
     h.check((await state.get_data()).get("domain") == "example.com", "domain saved in state")
@@ -553,7 +553,7 @@ async def run() -> int:
     h.section("S5 pilih 4 -> konfirmasi")
     await create_random.on_count(make_callback("r:cnt:4"), bot, session, state, cf)
     text = bot.last_text or ""
-    h.check("KONFIRMASI" in text, "confirm screen shown")
+    h.check("CONFIRM" in text, "confirm screen shown")
     h.check(text.count("@example.com") == 4, "exactly 4 emails generated")
     batch_id = (await state.get_data()).get("batch_id")
     h.check(batch_id is not None, "batch id stored")
@@ -571,7 +571,7 @@ async def run() -> int:
     # ---- S7: confirm -> create all ----
     h.section("S7 buat semua")
     await create_random.on_confirm(make_callback(f"r:ok:{batch_id}"), bot, session, state, cf)
-    h.check("BERHASIL DIBUAT" in (bot.last_text or ""), "success screen shown")
+    h.check("EMAILS CREATED" in (bot.last_text or ""), "success screen shown")
     h.check(cf.total_rules("z_example") == 4, "4 rules created on Cloudflare")
     h.check(DB.batches[batch_id].status == M.BatchStatus.completed.value, "batch completed")
 
@@ -592,7 +592,7 @@ async def run() -> int:
     await create_random.on_count(make_callback("r:cnt:2"), bot, session, state2, cf)
     bid2 = (await state2.get_data()).get("batch_id")
     await create_random.on_confirm(make_callback(f"r:ok:{bid2}"), bot, session, state2, cf)
-    h.check("PEMBUATAN SELESAI" in (bot.last_text or ""), "partial result shown")
+    h.check("CREATION FINISHED" in (bot.last_text or ""), "partial result shown")
     h.check(DB.batches[bid2].status == M.BatchStatus.partial.value, "batch marked partial")
     items = DB.items[bid2]
     h.check(sum(1 for it in items if it.status == "failed") == 1, "exactly 1 failed item")
@@ -600,7 +600,7 @@ async def run() -> int:
     await create_random.on_retry_failed(
         make_callback(f"r:rf:{bid2}"), bot, session, state2, cf
     )
-    h.check("BERHASIL DIBUAT" in (bot.last_text or ""), "retry succeeded")
+    h.check("EMAILS CREATED" in (bot.last_text or ""), "retry succeeded")
     items2 = DB.items[bid2]
     h.check(all(it.status == "created" for it in items2), "all items created after retry")
 
@@ -609,25 +609,25 @@ async def run() -> int:
     await domains.on_menu_entry(make_callback("m:list"), bot, session, state, cf)
     await domains.on_domain_select(make_callback("d:sel:l:0"), bot, session, state, cf)
     total = cf.total_rules("z_example")
-    h.check(f"Total email: <b>{total}</b>" in (bot.last_text or ""), "email count shown")
+    h.check(f"Total emails: <b>{total}</b>" in (bot.last_text or ""), "email count shown")
     h.check(any(c and c.startswith("e:v:") for c in kb_callbacks(bot.last_markup)),
             "email view buttons present")
 
     # ---- S11: view detail ----
     h.section("S11 detail email")
     await email_list.on_view(make_callback("e:v:0"), bot, session, state, cf)
-    h.check("DETAIL EMAIL" in (bot.last_text or ""), "detail screen shown")
+    h.check("EMAIL DETAILS" in (bot.last_text or ""), "detail screen shown")
     h.check("e:del:0" in kb_callbacks(bot.last_markup), "delete button present")
 
     # ---- S12: delete ----
     h.section("S12 hapus email")
     before = cf.total_rules("z_example")
     await email_delete.on_delete(make_callback("e:del:0"), bot, session, state)
-    h.check("HAPUS EMAIL" in (bot.last_text or ""), "delete confirm shown")
+    h.check("DELETE EMAIL" in (bot.last_text or ""), "delete confirm shown")
     await email_delete.on_delete_confirm(
         make_callback("e:delok:0"), bot, session, state, cf
     )
-    h.check("BERHASIL DIHAPUS" in (bot.last_text or ""), "delete success shown")
+    h.check("EMAIL DELETED" in (bot.last_text or ""), "delete success shown")
     h.check(cf.total_rules("z_example") == before - 1, "rule removed on Cloudflare")
 
     # ---- S13: manual create ----
@@ -636,7 +636,7 @@ async def run() -> int:
     await domains.on_menu_entry(make_callback("m:create"), bot, session, state3, cf)
     await domains.on_domain_select(make_callback("d:sel:c:1"), bot, session, state3, cf)  # test.org
     await create_manual.on_manual(make_callback("c:man"), bot, session, state3)
-    h.check("INPUT EMAIL MANUAL" in (bot.last_text or ""), "manual prompt shown")
+    h.check("MANUAL EMAIL INPUT" in (bot.last_text or ""), "manual prompt shown")
     h.check((await state3.get_state()) is not None, "FSM waiting for input")
     await create_manual.on_manual_text(make_message(text="support"), bot, session, state3, cf)
     h.check("support@test.org" in (bot.last_text or ""), "manual confirm shows address")
@@ -645,7 +645,7 @@ async def run() -> int:
     await create_manual.on_confirm(
         make_callback(f"man:ok:{name_id}"), bot, session, state3, cf
     )
-    h.check("BERHASIL DIBUAT" in (bot.last_text or ""), "manual create success")
+    h.check("EMAILS CREATED" in (bot.last_text or ""), "manual create success")
     h.check("support@test.org" in cf.rules["z_test"], "support@test.org created on CF")
 
     # ---- S14: manual invalid input ----
@@ -654,7 +654,7 @@ async def run() -> int:
     await create_manual.on_manual_text(
         make_message(text="bad name with space"), bot, session, state3, cf
     )
-    h.check("TIDAK VALID" in (bot.last_text or ""), "invalid input rejected")
+    h.check("INVALID INPUT" in (bot.last_text or ""), "invalid input rejected")
 
     # ---- S15: owner-only middleware ----
     h.section("S15 owner-only access control")

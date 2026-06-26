@@ -99,11 +99,11 @@ async def on_count(
     state: FSMContext,
     cf: CloudflareClient,
 ) -> None:
-    await render.ack(callback, "Membuat nama...")
+    await render.ack(callback, "Generating names...")
     parts = cb.parse(callback.data)
     count = cb.safe_int(parts[2], 0) if len(parts) > 2 else 0
     if count < 1 or count > 10:
-        await render.ack(callback, "Jumlah tidak valid.", True)
+        await render.ack(callback, "Invalid amount.", True)
         return
 
     data = await state.get_data()
@@ -125,7 +125,7 @@ async def on_reroll(
     state: FSMContext,
     cf: CloudflareClient,
 ) -> None:
-    await render.ack(callback, "Mengacak ulang...")
+    await render.ack(callback, "Shuffling...")
     data = await state.get_data()
     zone_id, domain = data.get("zone_id"), data.get("domain")
     batch_id = data.get("batch_id")
@@ -180,7 +180,7 @@ async def _generate_into_batch(
         await reservation_service.release(session, token)
         await render.show(
             bot, session, callback,
-            render.cloudflare_error_text("Gagal menghasilkan nama unik. Coba lagi."),
+            render.cloudflare_error_text("Failed to generate unique names. Try again."),
             main_menu_kb(),
         )
         return
@@ -226,7 +226,7 @@ async def on_confirm(
     # double-click protection: atomically move into 'processing'
     batch = await batches_repo.try_lock_for_processing(session, batch_id)
     if batch is None:
-        await render.ack(callback, "\u23F3 Proses sedang berjalan / sudah selesai.", True)
+        await render.ack(callback, "\u23F3 Process already running / finished.", True)
         return
     await session.commit()
     await render.ack(callback)
@@ -250,7 +250,7 @@ async def on_retry_failed(
     state: FSMContext,
     cf: CloudflareClient,
 ) -> None:
-    await render.ack(callback, "Mengganti nama yang gagal...")
+    await render.ack(callback, "Replacing failed names...")
     parts = cb.parse(callback.data)
     batch_id = cb.safe_int(parts[2], 0) if len(parts) > 2 else 0
 
@@ -262,7 +262,7 @@ async def on_retry_failed(
     items = await batches_repo.get_items(session, batch_id)
     failed = [it for it in items if it.status == BatchItemStatus.failed.value]
     if not failed:
-        await render.ack(callback, "Tidak ada email yang gagal.", True)
+        await render.ack(callback, "No failed emails.", True)
         return
 
     # generate replacements for the failed slots
@@ -360,4 +360,4 @@ async def _finish(
 
 
 async def _need_restart(callback: CallbackQuery) -> None:
-    await render.ack(callback, "Sesi kedaluwarsa. Tekan /start lagi.", True)
+    await render.ack(callback, "Session expired. Press /start again.", True)
