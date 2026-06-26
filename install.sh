@@ -159,7 +159,8 @@ configure_env() {
   cur_api_id=$(grep -E '^TELEGRAM_API_ID=' .env | cut -d= -f2-)
   cur_api_hash=$(grep -E '^TELEGRAM_API_HASH=' .env | cut -d= -f2-)
 
-  # sensible defaults for the Local Bot API credentials (override anytime)
+  # Local Bot API credentials: TIDAK ditanya lagi (sudah disiapkan untuk bot).
+  # Tetap dipastikan terisi dari nilai yang ada atau default.
   cur_api_id="${cur_api_id:-32773999}"
   cur_api_hash="${cur_api_hash:-d2eb7260911dbce615a1fb27f36d4b12}"
 
@@ -168,8 +169,9 @@ configure_env() {
   set_env CLOUDFLARE_API_TOKEN      "$(prompt_default 'Cloudflare API Token' "$cur_cf_token")"
   set_env CLOUDFLARE_ACCOUNT_ID     "$(prompt_default 'Cloudflare Account ID' "$cur_cf_acc")"
   set_env DEFAULT_DESTINATION_EMAIL "$(prompt_default 'Default Destination Email' "$cur_dest")"
-  set_env TELEGRAM_API_ID           "$(prompt_default 'Telegram API ID (my.telegram.org)' "$cur_api_id")"
-  set_env TELEGRAM_API_HASH         "$(prompt_default 'Telegram API Hash (my.telegram.org)' "$cur_api_hash")"
+  # api_id/api_hash diisi otomatis tanpa prompt
+  set_env TELEGRAM_API_ID           "$cur_api_id"
+  set_env TELEGRAM_API_HASH         "$cur_api_hash"
   set_env USE_PREMIUM_EMOJI         "$(prompt_default 'Aktifkan premium emoji? (1/0)' "$(grep -E '^USE_PREMIUM_EMOJI=' .env | cut -d= -f2- || echo 0)")"
 
   info ".env tersimpan."
