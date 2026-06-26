@@ -21,6 +21,7 @@ warn()  { echo -e "${c_yellow}[WARN]${c_reset} $*"; }
 err()   { echo -e "${c_red}[ERR ]${c_reset} $*" >&2; }
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_PATH="$SCRIPT_DIR/$(basename "${BASH_SOURCE[0]}")"
 cd "$SCRIPT_DIR"
 
 # --- must be root (for installing docker) -----------------------------------
@@ -49,6 +50,42 @@ wait_for_apt() {
     info "Menunggu proses apt/dpkg lain selesai (auto-update?)... ($tries)"
     sleep 5
   done
+}
+
+# --- 0. Detachable screen session -------------------------------------------
+# Run the installer inside a 'screen' session so a dropped SSH connection does
+# NOT kill the install. Reattach anytime with:  screen -r emailcf
+# Disable with: NO_SCREEN=1 sudo ./install.sh
+SCREEN_NAME="emailcf"
+ensure_screen_session() {
+  if [ -n "${EMAILCF_IN_SCREEN:-}" ] || [ -n "${STY:-}" ]; then
+    return  # already inside a/our screen session
+  fi
+  if [ "${NO_SCREEN:-0}" = "1" ]; then
+    return
+  fi
+  if [ ! -t 0 ]; then
+    return  # not an interactive terminal; skip screen
+  fi
+
+  if ! command -v screen >/dev/null 2>&1; then
+    info "Memasang 'screen' (agar install tahan koneksi putus)..."
+    wait_for_apt
+    $SUDO apt-get install -y screen >/dev/null 2>&1 || true
+  fi
+  if ! command -v screen >/dev/null 2>&1; then
+    warn "screen tidak tersedia; lanjut tanpa screen."
+    return
+  fi
+
+  if screen -ls 2>/dev/null | grep -q "\.${SCREEN_NAME}[[:space:]]"; then
+    info "Menyambung kembali ke sesi install '${SCREEN_NAME}'..."
+    exec screen -d -r "${SCREEN_NAME}"
+  fi
+
+  info "Menjalankan installer di dalam screen '${SCREEN_NAME}'."
+  info "Jika koneksi putus, sambung lagi dengan:  screen -r ${SCREEN_NAME}"
+  EMAILCF_IN_SCREEN=1 exec screen -S "${SCREEN_NAME}" bash "$SCRIPT_PATH" "$@"
 }
 
 install_docker() {
@@ -149,9 +186,15 @@ start_stack() {
   echo
   info "Selesai! Lihat log dengan:"
   echo "    $SUDO docker compose logs -f bot"
+  if [ -n "${STY:-}" ]; then
+    echo
+    info "Kamu di dalam screen '${SCREEN_NAME}'. Detach: tekan Ctrl+A lalu D."
+    info "Sambung lagi nanti dengan:  screen -r ${SCREEN_NAME}"
+  fi
 }
 
 main() {
+  ensure_screen_session "$@"
   install_docker
   configure_env
   start_stack

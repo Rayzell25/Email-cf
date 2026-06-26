@@ -48,6 +48,11 @@ sudo ./install.sh
 `install.sh` akan: memasang Docker (jika belum ada), membuat & mengisi `.env`
 secara interaktif, lalu menjalankan seluruh stack (bot + telegram-bot-api + redis).
 
+> Installer berjalan di dalam **`screen`** bernama `emailcf`. Kalau koneksi SSH
+> putus saat mengisi konfigurasi, prosesnya tetap jalan — sambung lagi dengan:
+> `screen -r emailcf` (atau `screen -d -r emailcf`). Untuk menonaktifkan screen:
+> `NO_SCREEN=1 sudo ./install.sh`.
+
 Lihat log:
 
 ```bash
